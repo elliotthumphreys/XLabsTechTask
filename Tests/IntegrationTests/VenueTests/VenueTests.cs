@@ -34,6 +34,7 @@ namespace IntegrationTests.VenueTests
         [Test]
         public async Task Get_ReturnsAllVenues()
         {
+            Assert.Fail("Just proving my github actions show fails");
             // arrange
             var venueCountInDb = _context.Set<Venue>().Count();
 
