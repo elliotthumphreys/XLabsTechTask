@@ -13,6 +13,7 @@ namespace UnitTests.Venues
         [Test]
         public void Create_VenueCreated()
         {
+            Assert.Fail("Just proving my github actions show fails");
             // arrange
             var createVenueDto = new CreateVenueDto
             {
