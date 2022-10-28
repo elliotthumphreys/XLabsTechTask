@@ -1,0 +1,46 @@
+version: '3.4'
+
+services:
+  webapi:
+    container_name: webapi
+    image: ${DOCKER_REGISTRY-}webapi
+    build:
+      context: .
+      dockerfile: WebApi/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__BeerQuestDatabaseConnectionString=Data Source=sql-server-database; Initial Catalog=BeerQuest; User Id=sa; Password=LocalUserPassword1*
+    depends_on:
+      - sql-server-database
+    restart: always
+    tty: true
+    ports:
+      - "8001:443"
+      - "8000:80"
+
+  sql-server-database:
+    container_name: sql-server-database
+    image: mcr.microsoft.com/mssql/server
+    restart: always
+    environment:
+      SA_PASSWORD: LocalUserPassword1*
+      ACCEPT_EULA: "Y"
+    tty: true
+    ports:
+      - "1433:1433"
+
+  integration-tests:
+    container_name: integration-tests
+    image: ${DOCKER_REGISTRY-}integration-tests
+    build:
+      context: .
+      dockerfile: Tests/IntegrationTests/Dockerfile
+    environment:
+      - ConnectionStrings__BeerQuestDatabaseConnectionString=Data Source=sql-server-database; Initial Catalog=BeerQuest; User Id=sa; Password=LocalUserPassword1*
+      - ConnectionStrings__WebApi=http://webapi:80
+    command: ["./wait-for-it.sh", "webapi:80", "--strict" , "--timeout=60", "--", "./wait-for-it.sh", "sql-server-database:1433", "--strict" , "--timeout=60", "--", "dotnet", "test", "IntegrationTests.dll"]
+    depends_on:
+      - sql-server-database
+      - webapi
+    links:
+      - webapi

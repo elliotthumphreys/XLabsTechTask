@@ -1,0 +1,28 @@
+name: Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  unitTests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Execute unit tests
+        working-directory: .
+        run: dotnet test Tests/UnitTests/
+
+  integrationTests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Start docker containers & run integration tests
+        run: |
+          docker-compose -f docker-compose-tests.yml build --no-cache
+          docker-compose -f docker-compose-tests.yml run integration-tests
